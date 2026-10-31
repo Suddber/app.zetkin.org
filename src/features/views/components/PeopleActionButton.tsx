@@ -16,6 +16,7 @@ import useCreateJoinForm from 'features/joinForms/hooks/useCreateJoinForm';
 import useCreateView from '../hooks/useCreateView';
 import useFolder from '../hooks/useFolder';
 import { useMessages } from 'core/i18n';
+import { ZetkinViewFolder } from '../components/types';
 import ZUIButtonMenu from 'zui/ZUIButtonMenu';
 import ZUICreatePerson from 'zui/ZUICreatePerson';
 import zuiMessageIds from 'zui/l10n/messageIds';
@@ -49,7 +50,7 @@ const PeopleActionButton: FC<PeopleActionButtonProps> = ({
   }, [pathname, pendingRoute]);
 
   const createAndNavigate = async (
-    create: () => Promise<void>,
+    create: () => Promise<ZetkinViewFolder | void>,
     route?: string
   ) => {
     setIsLoading(true);
@@ -93,16 +94,21 @@ const PeopleActionButton: FC<PeopleActionButtonProps> = ({
             icon: <FolderOutlined />,
             label: messages.actions.createFolder(),
             onClick: async () => {
-              createAndNavigate(
-                () =>
-                  createFolder(
-                    messages.newFolderTitle(),
-                    folderId || undefined
-                  ),
-                !pathname?.includes('folders')
-                  ? `/organize/${orgId}/people`
-                  : undefined
-              );
+              try {
+                setIsLoading(true);
+
+                const createdFolder = await createFolder(
+                  messages.newFolderTitle(),
+                  folderId ?? undefined
+                );
+
+                router.push(
+                  `/organize/${orgId}/people/folders/${createdFolder.id}`
+                );
+              } catch (error) {
+                setIsLoading(false);
+                showSnackbar('error', messages.actions.createError());
+              }
             },
           },
           {

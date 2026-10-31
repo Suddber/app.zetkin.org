@@ -28,7 +28,7 @@ type ZetkinViewFolderUpdateBody = Partial<
 };
 
 interface UseFolderReturn {
-  createFolder: (title: string, folderId?: number) => Promise<void>;
+  createFolder: (title: string, folderId?: number) => Promise<ZetkinViewFolder>;
   deleteFolder: (folderId: number) => void;
   folderFuture: IFuture<ZetkinViewFolder>;
   recentlyCreatedFolder: ZetkinViewFolder | null;
@@ -59,7 +59,7 @@ export default function useFolder(
   const createFolder = async (
     title: string,
     folderId?: number
-  ): Promise<void> => {
+  ): Promise<ZetkinViewFolder> => {
     dispatch(folderCreate());
     const folder = await apiClient.post<
       ZetkinViewFolder,
@@ -70,6 +70,7 @@ export default function useFolder(
     });
 
     dispatch(folderCreated(folder));
+    return folder;
   };
 
   const deleteFolder = async (folderId: number): Promise<void> => {
